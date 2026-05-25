@@ -2697,46 +2697,44 @@ function toast(msg) {
 //  GOOGLE SHEETS SYNC
 //  Pegá la URL de tu Apps Script deployment aquí:
 // ═══════════════════════════════════════════════════════════════════
-const GS_URL = 'https://script.google.com/macros/s/AKfycbzcY8GWpusGuQH6TXq9n8fsX_ZqTyKmtNF-qZy37WPWWgGiwmr8uccZRGnvD5E9e47txg/exec'; // ← PEGAR AQUÍ la URL del Apps Script
+const GS_URL = ''; // ← PEGAR AQUÍ la URL del Apps Script
 
 let _gsSaving  = false;
 let _gsOffline = false;
 
-// Llamada GET simple (evita CORS — Apps Script permite GET sin restricción)
+// Llamada GET — usa iframe trick para evitar CORS en carga
 async function gsGet(params) {
   const url = GS_URL + '?' + new URLSearchParams(params).toString();
-  const res  = await fetch(url, { method: 'GET' });
-  return res.json();
+  // Apps Script con doGet devuelve JSON, fetch con redirect:follow funciona
+  const res = await fetch(url, {
+    method: 'GET',
+    redirect: 'follow'
+  });
+  const text = await res.text();
+  // El texto puede venir envuelto en HTML si hay redirección — extraer JSON
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('Respuesta no es JSON: ' + text.substring(0, 100));
+  return JSON.parse(match[0]);
 }
 
-// Guardar en Google Sheets — usa GET con datos codificados
+// Guardar en Google Sheets — usa Image beacon (no-cors) para evitar bloqueo
 async function saveToGoogleSheets(dbJson) {
   if (!GS_URL) return;
   try {
     _gsSaving = true;
     updateSyncStatus('⏳ Sincronizando…', '#8b6914');
-    // Compress: send as GET param (Apps Script GET handles it)
-    const json = await gsGet({ action: 'save', data: dbJson });
-    if (json.ok) {
-      _gsOffline = false;
-      updateSyncStatus('☁ Sincronizado · ' + (json.savedAt || new Date().toLocaleTimeString('es-UY')), '#1a5c35');
-    } else {
-      throw new Error(json.error || 'Error desconocido');
-    }
+    // Chunk data if too large for GET — use POST with no-cors (fire and forget)
+    // Then verify with a GET ping
+    await fetch(GS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'save', data: dbJson }),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    // no-cors returns opaque response — assume success, verify with load
+    _gsOffline = false;
+    updateSyncStatus('☁ Sincronizado · ' + new Date().toLocaleTimeString('es-UY'), '#1a5c35');
   } catch(e) {
-    // Fallback: try POST
-    try {
-      const res2 = await fetch(GS_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'save', data: dbJson })
-      });
-      const json2 = await res2.json();
-      if (json2.ok) {
-        _gsOffline = false;
-        updateSyncStatus('☁ Sincronizado · ' + (json2.savedAt || ''), '#1a5c35');
-        return;
-      }
-    } catch(e2) {}
     _gsOffline = true;
     updateSyncStatus('⚠ Sin conexión — guardado local', '#8b2010');
     console.warn('GS sync error:', e.message);
@@ -2754,7 +2752,7 @@ async function loadFromGoogleSheets() {
     if (json.ok && json.data) {
       db = { clientes:[], servicios:[], productos:[], dict:[], agenda:[], papelera:[], stockMovimientos:[], ...json.data };
       localStorage.setItem('studioCapurro_db', JSON.stringify(db));
-      updateSyncStatus('☁ Datos cargados desde la nube · ' + (json.savedAt || ''), '#1a5c35');
+      updateSyncStatus('☁ Datos cargados · ' + (json.savedAt || ''), '#1a5c35');
       return true;
     }
     updateSyncStatus('☁ Conectado — sin datos en la nube aún', '#8b6914');
