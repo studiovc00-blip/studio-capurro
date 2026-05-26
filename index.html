@@ -4000,6 +4000,22 @@ function renderServiciosTable() {
     border-bottom: 2px solid rgba(60,45,15,0.5);
     box-shadow: 0 5px 0 rgba(100,80,30,0.20), 0 8px 28px rgba(0,0,0,0.45);
   ">
+    <!-- Header -->
+    <div style="
+      display:grid; grid-template-columns: 1fr 80px 72px 48px 48px;
+      padding: 10px 20px;
+      background: linear-gradient(180deg, #1e1a10 0%, #141008 100%);
+      border-bottom: 2px solid rgba(212,168,67,0.30);
+      font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: rgba(212,168,67,0.60);
+      align-items: center; gap: 8px;
+    ">
+      <span>Servicio</span>
+      <span style="text-align:center">Popularidad</span>
+      <span style="text-align:right">Precio</span>
+      <span></span><span></span>
+    </div>
+    <!-- Rows -->
     ${sorted.map((s, i) => {
       const usos = usageCount[s.nombre] || 0;
       const pct = Math.round((usos / maxUsos) * 100);
@@ -4007,67 +4023,66 @@ function renderServiciosTable() {
       const isLast = i === sorted.length - 1;
       return `
       <div style="
-        padding: 16px 20px 14px;
-        border-bottom: ${isLast ? 'none' : '1px solid rgba(200,170,100,0.15)'};
+        display:grid; grid-template-columns: 1fr 80px 72px 48px 48px;
+        padding: 14px 20px; gap: 8px; align-items: center;
+        border-bottom: ${isLast ? 'none' : '1px solid rgba(200,170,100,0.13)'};
         background: linear-gradient(180deg, rgba(255,255,240,0.55) 0%, rgba(240,225,195,0.35) 100%);
         transition: background 0.15s;
+        cursor: default;
       "
-      onmouseover="this.style.background='linear-gradient(180deg,rgba(212,168,67,0.11) 0%,rgba(212,168,67,0.05) 100%)'"
+      onmouseover="this.style.background='linear-gradient(180deg,rgba(212,168,67,0.13) 0%,rgba(212,168,67,0.06) 100%)'"
       onmouseout="this.style.background='linear-gradient(180deg,rgba(255,255,240,0.55) 0%,rgba(240,225,195,0.35) 100%)'">
 
-        <!-- Fila superior: nombre + precio -->
-        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px">
-          <div style="font-family:'Crimson Pro',serif;font-size:20px;font-weight:700;color:var(--ink);line-height:1.2">${s.nombre}</div>
-          ${s.precio
-            ? `<div style="font-family:'Crimson Pro',serif;font-size:19px;font-weight:700;color:var(--gold-shade);flex-shrink:0">${fmtMoney(s.precio)}</div>`
-            : `<div style="font-size:13px;color:rgba(110,90,62,0.38);flex-shrink:0">Sin precio</div>`}
+        <!-- Nombre + desc -->
+        <div style="min-width:0">
+          <div style="font-family:'Crimson Pro',serif;font-size:17px;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.nombre}</div>
+          ${s.desc ? `<div style="font-size:11px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.desc}</div>` : ''}
         </div>
-
-        ${s.desc ? `<div style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;line-height:1.4">${s.desc}</div>` : ''}
 
         <!-- Barra de popularidad -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <div style="flex:1;height:4px;border-radius:3px;background:rgba(110,90,62,0.18);overflow:hidden">
-            <div style="width:${pct}%;height:100%;border-radius:3px;background:${barColor}"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:100%;height:5px;border-radius:3px;background:rgba(110,90,62,0.18);overflow:hidden">
+            <div style="width:${pct}%;height:100%;border-radius:3px;background:${barColor};transition:width 0.4s"></div>
           </div>
-          <span style="font-size:11px;font-weight:700;letter-spacing:0.5px;color:${usos > 0 ? '#1a5c35' : 'var(--ink-soft)');flex-shrink:0">${usos} uso${usos!==1?'s':''}</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${usos > 0 ? '#1a5c35' : 'var(--ink-soft)'}">${usos} uso${usos!==1?'s':''}</span>
         </div>
 
-        <!-- Botones abajo -->
-        <div style="display:flex;gap:8px">
-          <button onclick="editService('${s.id}')" style="
-            flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
-            padding:9px 0;
-            font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.3px;
-            color:var(--cream); cursor:pointer;
-            background:linear-gradient(180deg,#4a4030 0%,#26221a 100%);
-            border-top:1px solid rgba(255,220,180,0.20); border-left:1px solid rgba(255,220,180,0.12);
-            border-right:1px solid rgba(0,0,0,0.5); border-bottom:1px solid rgba(0,0,0,0.6);
-            box-shadow:0 3px 0 rgba(0,0,0,0.50),0 5px 10px rgba(0,0,0,0.25);
-            border-radius:var(--r); transition:all 0.12s;
-          "
-          onmouseover="this.style.color='var(--gold-lit)';this.style.transform='translateY(-1px)'"
-          onmouseout="this.style.color='var(--cream)';this.style.transform='translateY(0)'">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Editar
-          </button>
-          <button onclick="deleteService('${s.id}')" style="
-            flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
-            padding:9px 0;
-            font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.3px;
-            color:#fff; cursor:pointer;
-            background:linear-gradient(180deg,#e05840 0%,#9a3020 100%);
-            border-top:1px solid rgba(255,160,140,0.35); border-left:1px solid rgba(255,140,120,0.20);
-            border-right:1px solid rgba(0,0,0,0.4); border-bottom:1px solid rgba(0,0,0,0.5);
-            box-shadow:0 3px 0 rgba(0,0,0,0.50),0 5px 10px rgba(0,0,0,0.25);
-            border-radius:var(--r); transition:all 0.12s;
-          "
-          onmouseover="this.style.filter='brightness(1.15)';this.style.transform='translateY(-1px)'"
-          onmouseout="this.style.filter='brightness(1)';this.style.transform='translateY(0)'">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            Eliminar
-          </button>
+        <!-- Precio -->
+        <div style="text-align:right">
+          ${s.precio
+            ? `<span style="font-family:'Crimson Pro',serif;font-size:17px;font-weight:700;color:var(--gold-shade)">${fmtMoney(s.precio)}</span>`
+            : `<span style="font-size:12px;color:rgba(110,90,62,0.40)">—</span>`}
         </div>
+
+        <!-- Botón Editar (ícono) -->
+        <button onclick="editService('${s.id}')" title="Editar" style="
+          background:linear-gradient(180deg,#4a4030 0%,#26221a 100%);
+          border-top:1px solid rgba(255,220,180,0.20); border-left:1px solid rgba(255,220,180,0.12);
+          border-right:1px solid rgba(0,0,0,0.5); border-bottom:1px solid rgba(0,0,0,0.6);
+          box-shadow:0 3px 0 rgba(0,0,0,0.55),0 5px 10px rgba(0,0,0,0.3);
+          border-radius:var(--r); width:34px;height:34px;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;
+          color:var(--cream); transition:all 0.12s;
+        "
+        onmouseover="this.style.color='var(--gold-lit)';this.style.transform='translateY(-1px)'"
+        onmouseout="this.style.color='var(--cream)';this.style.transform='translateY(0)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+
+        <!-- Botón Eliminar (ícono) -->
+        <button onclick="deleteService('${s.id}')" title="Eliminar" style="
+          background:linear-gradient(180deg,#e05840 0%,#9a3020 100%);
+          border-top:1px solid rgba(255,160,140,0.35); border-left:1px solid rgba(255,140,120,0.20);
+          border-right:1px solid rgba(0,0,0,0.4); border-bottom:1px solid rgba(0,0,0,0.5);
+          box-shadow:0 3px 0 rgba(0,0,0,0.55),0 5px 10px rgba(0,0,0,0.3);
+          border-radius:var(--r); width:34px;height:34px;cursor:pointer;
+          display:flex;align-items:center;justify-content:center;
+          color:#fff; transition:all 0.12s;
+        "
+        onmouseover="this.style.filter='brightness(1.15)';this.style.transform='translateY(-1px)'"
+        onmouseout="this.style.filter='brightness(1)';this.style.transform='translateY(0)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
 
       </div>`;
     }).join('')}
