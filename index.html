@@ -1876,6 +1876,22 @@
       gap: 8px;
     }
 
+    /* ── Ocultar botones Importar/Exportar Excel en móvil ── */
+    button[onclick*="exportServiciosExcel"],
+    button[onclick*="exportProductosExcel"],
+    button[onclick*="exportStockCSV"],
+    button[onclick*="exportExcel"],
+    button[onclick*="importServiciosXLSX"],
+    button[onclick*="importStockXLSX"],
+    button[onclick*="svImportInput"],
+    button[onclick*="proImportInput"],
+    button[onclick*="stockImportInput"],
+    input[id="svImportInput"],
+    input[id="proImportInput"],
+    input[id="stockImportInput"] {
+      display: none !important;
+    }
+
     /* ── Ocultar elementos no esenciales en móvil ── */
     .hide-mobile { display: none !important; }
 
