@@ -1879,6 +1879,46 @@
     .cf-row { flex-wrap: wrap; gap: 6px; }
     .cf-row select, .cf-row input { font-size: 14px; }
 
+    /* ── Ficha Producto: 2 columnas → 1 columna ── */
+    #tab-productos .card > div[style*="grid-template-columns"],
+    #tab-productos .card > div[style*="grid"] {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 16px !important;
+    }
+    /* Filas de precios/stock dentro de producto */
+    #pr_stockPrecioBlock > div[style*="display:flex"] {
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #pr_stockPrecioBlock > div > div[style*="flex:1"] {
+      flex: 1 1 calc(50% - 10px) !important;
+      min-width: 80px;
+    }
+
+    /* ── Ficha de visita: servicios y productos ancho completo ── */
+    .form-grid {
+      grid-template-columns: 1fr !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    .form-grid > * {
+      grid-column: auto !important;
+      grid-row: auto !important;
+    }
+    /* Select de servicio: ancho completo */
+    .cf-row {
+      display: flex !important;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .cf-row > select {
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      max-width: none !important;
+    }
+
     /* ── Toast más visible ── */
     #toast {
       bottom: 76px;
@@ -1954,9 +1994,8 @@
     </div>
     <button class="splash-enter"
       ontouchstart=""
-      ontouchend="this._touched=true"
-      onclick="if(this._touched||true){var s=document.getElementById('splash');s.style.display='none';}"
-      style="cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(212,168,67,0.3)">
+      onclick="document.getElementById('splash').style.cssText='display:none!important'"
+      style="cursor:pointer;touch-action:manipulation">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Ingresar al sistema
     </button>
