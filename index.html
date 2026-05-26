@@ -3048,6 +3048,9 @@ function showTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.nav-btn')[idx]?.classList.add('active');
+  // Scroll nav bar to show active button
+  const navBtn = document.querySelectorAll('.nav-btn')[idx];
+  if (navBtn) navBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   if (name === 'clientes')  { cancelClientForm(); renderClientList(); }
   if (name === 'historial') renderHistorial();
   if (name === 'agenda')    { ensureAgenda(); initAgendaSelects(); renderAgenda(); }
@@ -3055,6 +3058,56 @@ function showTab(name) {
   if (name === 'estadisticas') { renderEstadisticas(); }
   if (name === 'stock') { renderStock(); }
 }
+
+// ── Swipe horizontal para cambiar de módulo (solo móvil) ──────────
+(function() {
+  const TAB_ORDER = ['clientes','servicios','productos','agenda','historial','estadisticas','stock','config'];
+  let swipeStartX = 0, swipeStartY = 0, swipeStartTime = 0;
+
+  function currentTabName() {
+    const active = document.querySelector('.tab.active');
+    if (!active) return 'clientes';
+    return active.id.replace('tab-', '');
+  }
+
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+    swipeStartTime = Date.now();
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    if (!swipeStartX) return;
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    const dt = Date.now() - swipeStartTime;
+
+    // Solo swipe rápido (< 400ms), horizontal (dx > dy), y desplazamiento mínimo (> 60px)
+    if (dt > 400 || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+
+    // No activar si el toque empezó en la barra de navegación inferior
+    if (swipeStartY > window.innerHeight - 80) return;
+
+    // No activar si hay un input/select/textarea activo (el usuario puede estar scrolleando dentro)
+    const tag = document.activeElement?.tagName;
+    if (['INPUT','SELECT','TEXTAREA'].includes(tag)) return;
+
+    const cur = currentTabName();
+    const idx = TAB_ORDER.indexOf(cur);
+    if (idx === -1) return;
+
+    if (dx < 0 && idx < TAB_ORDER.length - 1) {
+      // Deslizar izquierda → tab siguiente
+      showTab(TAB_ORDER[idx + 1]);
+    } else if (dx > 0 && idx > 0) {
+      // Deslizar derecha → tab anterior
+      showTab(TAB_ORDER[idx - 1]);
+    }
+
+    swipeStartX = 0;
+  }, { passive: true });
+})();
 
 // ─────────────────────────────────────
 // TOAST
