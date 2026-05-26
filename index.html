@@ -1952,7 +1952,11 @@
     <div class="splash-tagline">
       Sistema de gestión de Clientes, Productos y Servicios
     </div>
-    <button class="splash-enter" onclick="closeSplash()">
+    <button class="splash-enter"
+      ontouchstart=""
+      ontouchend="this._touched=true"
+      onclick="if(this._touched||true){var s=document.getElementById('splash');s.style.display='none';}"
+      style="cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(212,168,67,0.3)">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Ingresar al sistema
     </button>
