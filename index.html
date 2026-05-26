@@ -1867,8 +1867,26 @@
     .kpi-value { font-size: 24px; }
     .kpi-label { font-size: 9px; }
 
-    /* ── Historial visitas ── */
-    .visit-card { padding: 12px; }
+    /* ── Historial de visitas: columnas en vertical ── */
+    .visit-record-body {
+      flex-direction: column !important;
+    }
+    .visit-record-col {
+      border-right: none !important;
+      border-bottom: 1px solid rgba(200,170,100,0.18);
+      padding: 10px 14px !important;
+    }
+    .visit-record-col:last-of-type {
+      border-bottom: none;
+    }
+    .visit-record-actions {
+      flex-direction: row !important;
+      border-left: none !important;
+      border-top: 1px solid rgba(200,170,100,0.18);
+      padding: 10px 14px !important;
+      justify-content: flex-end;
+      gap: 8px;
+    }
 
     /* ── Importar/Exportar botones: columna ── */
     .config-actions {
