@@ -1991,10 +1991,10 @@ let _idleEnabled = false;
 // Request fullscreen on first user interaction (browser requires gesture)
 function requestFullscreen() {
   const el = document.documentElement;
-  if (el.requestFullscreen)            el.requestFullscreen();
-  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-  else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
-  else if (el.msRequestFullscreen)     el.msRequestFullscreen();
+  try {
+    const p = el.requestFullscreen?.() || el.webkitRequestFullscreen?.() || el.mozRequestFullScreen?.() || el.msRequestFullscreen?.();
+    if (p && p.catch) p.catch(() => {});
+  } catch(e) {}
 }
 
 // Try fullscreen as soon as page loads (works in some browsers without gesture)
@@ -2003,7 +2003,8 @@ function requestFullscreen() {
 })();
 
 function closeSplash() {
-  requestFullscreen(); // ensure fullscreen on button click (user gesture)
+  // requestFullscreen puede fallar en algunos navegadores móviles — ignorar error
+  try { requestFullscreen(); } catch(e) {}
   const s = document.getElementById('splash');
   s.classList.add('hiding');
   setTimeout(() => s.classList.add('hidden'), 720);
