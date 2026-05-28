@@ -1282,10 +1282,10 @@
 
   /* KPI strip */
   .dash-kpi-strip {
-    display: grid; grid-template-columns: repeat(6,1fr); gap: 12px;
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 12px;
     margin-bottom: 20px;
   }
-  @media (max-width: 1100px) { .dash-kpi-strip { grid-template-columns: repeat(3,1fr); } }
+  @media (min-width: 1200px) { .dash-kpi-strip { grid-template-columns: repeat(4,1fr); } }
   @media (max-width: 640px)  { .dash-kpi-strip { grid-template-columns: repeat(2,1fr); } }
   .dash-kpi {
     position: relative; overflow: hidden;
@@ -6113,11 +6113,53 @@ function renderEstadisticas() {
   });
   const topServicio = Object.entries(svCountKpi).sort((a,b) => b[1]-a[1])[0];
 
-  // ── KPI strip — 7 cards ──
+  // ── KPI strip — métricas extendidas ──
+
+  // Productos vendidos en el período
+  let productosVendidos = 0;
+  visitas.forEach(v => {
+    const prods = (v.productos && v.productos.length)
+      ? v.productos
+      : (v.producto ? [{ cantidad: v.cantidadProducto || 1 }] : []);
+    prods.forEach(p => { productosVendidos += parseInt(p.cantidad) || 1; });
+  });
+
+  // Ingresos sólo por servicios vs sólo por productos
+  let ingresoSvs = 0, ingresoPrds = 0;
+  visitas.forEach(v => {
+    const svs = (v.servicios && v.servicios.length)
+      ? v.servicios : (v.servicio ? [{ precioUnit: v.servicioPrecio || 0 }] : []);
+    const prods = (v.productos && v.productos.length)
+      ? v.productos : (v.producto ? [{ cantidad: v.cantidadProducto || 1, precioUnit: 0 }] : []);
+    ingresoSvs  += svs.reduce((s, x) => s + (parseFloat(x.precioUnit) || 0), 0);
+    ingresoPrds += prods.reduce((s, x) => s + (parseFloat(x.precioUnit) || 0) * (parseInt(x.cantidad) || 1), 0);
+  });
+
+  // Tasa de retorno: clientes que vinieron más de 1 vez en el período
+  const visitasPorCliente = {};
+  visitas.forEach(v => { visitasPorCliente[v.clienteId] = (visitasPorCliente[v.clienteId] || 0) + 1; });
+  const clientesRecurrentes = Object.values(visitasPorCliente).filter(n => n > 1).length;
+  const tasaRetorno = clientesUnicos > 0 ? Math.round((clientesRecurrentes / clientesUnicos) * 100) : 0;
+
+  // Visitas promedio por día (días con al menos una visita)
+  const diasConVisita = new Set(visitas.map(v => v.fecha).filter(Boolean)).size;
+  const visitasPorDia = diasConVisita > 0 ? (visitas.length / diasConVisita).toFixed(1) : '0';
+
+  // Producto más vendido del período
+  const prodCount = {};
+  visitas.forEach(v => {
+    const prods = (v.productos && v.productos.length)
+      ? v.productos : (v.producto ? [{ producto: v.producto, cantidad: v.cantidadProducto || 1 }] : []);
+    prods.forEach(p => {
+      if (p.producto) prodCount[p.producto] = (prodCount[p.producto] || 0) + (parseInt(p.cantidad) || 1);
+    });
+  });
+  const topProducto = Object.entries(prodCount).sort((a, b) => b[1] - a[1])[0];
+
   const kpis = [
     {
       value: fmtMoney(ingresoTotal),
-      label: 'Ingresos',
+      label: 'Ingresos totales',
       sub: trendIngTxt,
       trend: trendIngV,
       accent: '#d4a843',
@@ -6134,7 +6176,7 @@ function renderEstadisticas() {
     {
       value: clientesUnicos,
       label: 'Clientes atendidos',
-      sub: clientesNuevos > 0 ? `${clientesNuevos} nuevo${clientesNuevos!==1?'s':''}` : 'todos recurrentes',
+      sub: clientesNuevos > 0 ? `${clientesNuevos} nuevo${clientesNuevos!==1?'s':''} · ${clientesRecurrentes} recurrente${clientesRecurrentes!==1?'s':''}` : `${clientesRecurrentes} recurrente${clientesRecurrentes!==1?'s':''}`,
       trend: clientesNuevos > 0 ? 'up' : 'eq',
       accent: '#5a7aaa',
       icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>'
@@ -6142,17 +6184,40 @@ function renderEstadisticas() {
     {
       value: fmtMoney(ticketProm),
       label: 'Ticket promedio',
-      sub: 'por visita',
+      sub: `Svcs ${fmtMoney(ingresoSvs)} · Prods ${fmtMoney(ingresoPrds)}`,
       accent: '#8a5030',
       icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>'
     },
     {
+      value: `${tasaRetorno}%`,
+      label: 'Tasa de retorno',
+      sub: `${clientesRecurrentes} de ${clientesUnicos} cliente${clientesUnicos!==1?'s':''} volvieron`,
+      trend: tasaRetorno >= 50 ? 'up' : tasaRetorno > 0 ? 'eq' : 'dn',
+      accent: '#6a3a8a',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>'
+    },
+    {
       value: topServicio ? topServicio[0] : '—',
-      label: 'Servicio top',
+      label: 'Servicio más solicitado',
       sub: topServicio ? `${topServicio[1]} ${topServicio[1]!==1?'veces':'vez'}` : 'sin datos',
       accent: '#3a6a8a',
       icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
       smallValue: true
+    },
+    {
+      value: topProducto ? topProducto[0] : '—',
+      label: 'Producto más vendido',
+      sub: topProducto ? `${topProducto[1]} unidad${topProducto[1]!==1?'es':''}` : 'sin datos',
+      accent: '#4a7a5a',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>',
+      smallValue: true
+    },
+    {
+      value: citasPeriodo,
+      label: 'Citas agendadas',
+      sub: `${visitasPorDia} visita${visitasPorDia!=='1'?'s':''} por día activo`,
+      accent: '#8a6a2a',
+      icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
     },
     {
       value: db.clientes.length,
