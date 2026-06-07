@@ -2726,6 +2726,11 @@ function showTab(name) {
 // ─────────────────────────────────────
 function toast(msg) {
   const t = document.getElementById('toast');
+  if (!t) {
+    console.warn('Elemento toast no encontrado, usando console:', msg);
+    console.log(msg);
+    return;
+  }
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
@@ -4515,41 +4520,76 @@ function importJSON() {
 function handleImportJSON(e) {
   const file = e.target.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const imported = JSON.parse(ev.target.result);
-      if (!Array.isArray(imported.clientes) || !Array.isArray(imported.servicios) || !Array.isArray(imported.productos)) {
-        toast('⚠ Archivo JSON inválido: faltan secciones requeridas.'); return;
-      }
-      const cCount = imported.clientes.length;
-      const sCount = imported.servicios.length;
-      const pCount = imported.productos.length;
-
-      openConfirmGreen(
-        'Importar JSON',
-        `Se importarán: ${cCount} cliente(s), ${sCount} servicio(s), ${pCount} producto(s), ${aCount} cita(s). Los datos actuales serán reemplazados. ¿Continuar?`,
-        () => {
-          db = {
-            clientes: imported.clientes || [],
-            servicios: imported.servicios || [],
-            productos: imported.productos || [],
-            dict: imported.dict || [],
-            papelera: imported.papelera || [],
-            stockMovimientos: imported.stockMovimientos || []
-          };
-          saveData();
-          renderAll();
-          toast(`✔ Importado: ${cCount} clientes · ${sCount} servicios · ${pCount} productos.`);
+  
+  try {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        
+        // Validación mejorada de las secciones requeridas
+        if (!imported.clientes || !Array.isArray(imported.clientes)) {
+          toast('⚠ Archivo JSON inválido: falta la sección "clientes" (debe ser un array).'); 
+          return;
         }
-      );
-    } catch(err) {
-      toast('⚠ Error al leer el archivo JSON. Verifique que sea un respaldo válido.');
-      console.error(err);
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
+        if (!imported.servicios || !Array.isArray(imported.servicios)) {
+          toast('⚠ Archivo JSON inválido: falta la sección "servicios" (debe ser un array).'); 
+          return;
+        }
+        if (!imported.productos || !Array.isArray(imported.productos)) {
+          toast('⚠ Archivo JSON inválido: falta la sección "productos" (debe ser un array).'); 
+          return;
+        }
+        
+        const cCount = imported.clientes.length;
+        const sCount = imported.servicios.length;
+        const pCount = imported.productos.length;
+        const aCount = (Array.isArray(imported.dict) ? imported.dict.length : 0);
+
+        openConfirmGreen(
+          'Importar JSON',
+          `Se importarán: ${cCount} cliente(s), ${sCount} servicio(s), ${pCount} producto(s), ${aCount} cita(s). Los datos actuales serán reemplazados. ¿Continuar?`,
+          () => {
+            try {
+              db = {
+                clientes: imported.clientes || [],
+                servicios: imported.servicios || [],
+                productos: imported.productos || [],
+                dict: imported.dict || [],
+                papelera: imported.papelera || [],
+                stockMovimientos: imported.stockMovimientos || []
+              };
+              saveData();
+              renderAll();
+              toast(`✔ Importado: ${cCount} clientes · ${sCount} servicios · ${pCount} productos.`);
+            } catch(renderErr) {
+              console.error('Error al procesar datos importados:', renderErr);
+              toast('⚠ Error al procesar los datos. Intenta nuevamente.');
+            }
+          }
+        );
+      } catch(parseErr) {
+        console.error('Error al parsear JSON:', parseErr);
+        const msg = parseErr.message || 'Error desconocido';
+        if (msg.includes('JSON')) {
+          toast('⚠ El archivo no es un JSON válido. Verifique que sea un respaldo exportado por Studio Capurro.');
+        } else {
+          toast(`⚠ Error: ${msg}`);
+        }
+      }
+    };
+    
+    reader.onerror = () => {
+      toast('⚠ No se pudo leer el archivo.');
+      console.error('FileReader error');
+    };
+    
+    reader.readAsText(file);
+    e.target.value = '';
+  } catch(err) {
+    console.error('Error general en importación:', err);
+    toast('⚠ Error al importar el archivo.');
+  }
 }
 
 // ─────────────────────────────────────
@@ -5007,14 +5047,8 @@ setTimeout(updateHeaderHeight, 300);
 // ─────────────────────────────────────
 // RENDER ALL
 // ─────────────────────────────────────
-function renderAll() {
-  renderClientList();
-  renderServiciosTable();
-  renderProductosTable();
-  renderHistorial();
-  populateSelects();
-  if (document.getElementById('tab-stock')?.classList.contains('active')) renderStock();
-}
+// ⚠ FUNCIÓN ELIMINADA - renderAll duplicada ha sido removida.
+// Usar la primera definición en línea 2691
 
 // ─────────────────────────────────────
 // PAPELERA (Trash)
