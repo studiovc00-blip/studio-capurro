@@ -4346,6 +4346,8 @@ function handleImportJSON(e) {
       const cCount = imported.clientes.length;
       const sCount = imported.servicios.length;
       const pCount = imported.productos.length;
+      // Contar citas: suma de visitas de todos los clientes
+      const aCount = imported.clientes.reduce((acc, c) => acc + (Array.isArray(c.visitas) ? c.visitas.length : 0), 0);
 
       openConfirmGreen(
         'Importar JSON',
@@ -4368,9 +4370,9 @@ function handleImportJSON(e) {
       toast('⚠ Error al leer el archivo JSON. Verifique que sea un respaldo válido.');
       console.error(err);
     }
+    e.target.value = '';
   };
   reader.readAsText(file);
-  e.target.value = '';
 }
 
 // ─────────────────────────────────────
