@@ -238,6 +238,11 @@
     pointer-events: auto;
   }
 
+  #navOverlay.closing {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* MAIN */
   main {
     margin-top: 108px; padding: 20px 14px calc(24px + var(--safe-bottom));
@@ -297,13 +302,15 @@
       padding-top: 64px;
       z-index: 999;
       transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, opacity 0.3s ease;
       gap: 0;
       scrollbar-width: thin;
+      opacity: 0;
     }
 
     .header-nav.active {
       transform: translateX(0);
+      opacity: 1;
     }
 
     .header-nav::-webkit-scrollbar {
@@ -6867,15 +6874,38 @@ function toggleNavMenu() {
   const overlay = document.getElementById('navOverlay');
   
   if (nav && overlay) {
-    nav.classList.toggle('active');
-    overlay.classList.toggle('active');
+    const isActive = nav.classList.contains('active');
     
-    // Prevenir scroll del body cuando el menú está abierto
-    if (nav.classList.contains('active')) {
+    if (!isActive) {
+      // Abrir menú
+      nav.classList.add('active');
+      overlay.classList.remove('closing');
+      overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = '';
+      // Cerrar menú con animación
+      closeNavMenuWithAnimation();
     }
+  }
+}
+
+function closeNavMenuWithAnimation() {
+  const nav = document.querySelector('.header-nav');
+  const overlay = document.getElementById('navOverlay');
+  
+  if (nav && overlay) {
+    // Iniciar animación de cierre
+    overlay.classList.add('closing');
+    overlay.classList.remove('active');
+    nav.style.animation = 'slideOutLeft 0.3s ease forwards';
+    
+    // Después de la animación, remover las clases
+    setTimeout(() => {
+      nav.classList.remove('active');
+      nav.style.animation = '';
+      document.body.style.overflow = '';
+      overlay.classList.remove('closing');
+    }, 300);
   }
 }
 
@@ -6885,16 +6915,35 @@ function closeNavMenu() {
   
   if (nav && overlay) {
     nav.classList.remove('active');
-    overlay.classList.remove('active');
+    overlay.classList.remove('active', 'closing');
     document.body.style.overflow = '';
   }
+}
+
+// Agregar animación de salida a la izquierda
+if (!document.querySelector('style[data-nav-animation]')) {
+  const styleSheet = document.createElement('style');
+  styleSheet.setAttribute('data-nav-animation', 'true');
+  styleSheet.textContent = `
+    @keyframes slideOutLeft {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(styleSheet);
 }
 
 // Cerrar menú al abrir cualquier modal
 const origClassAdd = Element.prototype.classList.add;
 Element.prototype.classList.add = function(...args) {
   if (args.includes('open')) {
-    closeNavMenu(); // Cerrar menú cuando se abre un modal
+    closeNavMenuWithAnimation(); // Cierra con animación
   }
   return origClassAdd.call(this, ...args);
 };
@@ -6904,15 +6953,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const navButtons = document.querySelectorAll('.nav-btn');
   navButtons.forEach(btn => {
     btn.addEventListener('click', function() {
-      // Cerrar el menú después de un pequeño delay para que se vea la transición
-      setTimeout(closeNavMenu, 100);
+      // Cerrar el menú con animación
+      setTimeout(closeNavMenuWithAnimation, 50);
     });
   });
   
   // Cerrar menú al cambiar de tab con tecla Escape
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-      closeNavMenu();
+      closeNavMenuWithAnimation();
     }
   });
   
@@ -6920,7 +6969,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('button[onclick]');
     if (btn && btn.onclick && btn.onclick.toString().includes('Modal')) {
-      closeNavMenu();
+      closeNavMenuWithAnimation();
     }
   });
 });
