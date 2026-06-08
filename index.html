@@ -198,10 +198,178 @@
     background: rgba(176,125,10,0.09);
   }
 
+  /* Botón menú hamburguesa — solo en móvil */
+  #btnMenuNavMobile {
+    display: none;
+    background: none; border: none;
+    padding: 12px; cursor: pointer;
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    z-index: 1001;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #btnMenuNavMobile svg {
+    width: 24px; height: 24px;
+    stroke: var(--ink-mid);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.3s;
+  }
+
+  #btnMenuNavMobile:hover svg {
+    stroke: var(--gold);
+  }
+
+  /* Overlay para cerrar menú — solo en móvil */
+  #navOverlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  #navOverlay.active {
+    opacity: 1;
+  }
+
   /* MAIN */
   main {
     margin-top: 108px; padding: 20px 14px calc(24px + var(--safe-bottom));
     max-width: 1120px; margin-left: auto; margin-right: auto;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     MEDIA QUERIES: MOBILE NAVIGATION LAYOUT
+     ───────────────────────────────────────────────────────────────── */
+
+  @media (max-width: 768px) {
+    /* Mostrar botón hamburguesa */
+    #btnMenuNavMobile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Logo más pequeño en móvil */
+    .logo-circle {
+      width: 48px;
+      min-height: 48px;
+    }
+
+    /* Títulos más pequeños */
+    .header-studio {
+      font-size: 7px;
+      letter-spacing: 4px;
+    }
+
+    .header-name {
+      font-size: 18px;
+    }
+
+    /* Ocultar navegación horizontal */
+    .header-nav {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      flex-direction: column;
+      background: linear-gradient(180deg, #ffffff 0%, #fefcf8 100%);
+      border-right: 1px solid rgba(176,125,10,0.12);
+      border-top: none;
+      border-bottom: none;
+      overflow-y: auto;
+      padding-top: 64px;
+      z-index: 999;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      gap: 0;
+      scrollbar-width: thin;
+    }
+
+    .header-nav.active {
+      transform: translateX(0);
+    }
+
+    .header-nav::-webkit-scrollbar {
+      display: block;
+      width: 6px;
+    }
+
+    .header-nav::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .header-nav::-webkit-scrollbar-thumb {
+      background: rgba(176,125,10,0.2);
+      border-radius: 3px;
+    }
+
+    /* Botones de navegación más grandes en móvil */
+    .nav-btn {
+      border-right: none;
+      border-bottom: 1px solid rgba(176,125,10,0.08);
+      border-left: 3px solid transparent;
+      padding: 16px 20px;
+      min-height: auto;
+      font-size: 11px;
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .nav-btn:hover {
+      background: rgba(176,125,10,0.08);
+    }
+
+    .nav-btn.active {
+      border-left-color: var(--gold-lit);
+      border-bottom-color: rgba(176,125,10,0.08);
+      background: rgba(176,125,10,0.12);
+    }
+
+    /* Mostrar overlay */
+    #navOverlay {
+      display: block;
+    }
+
+    #navOverlay.active {
+      pointer-events: auto;
+    }
+
+    /* Header más compacto */
+    .header-top {
+      min-height: 48px;
+      padding: 0;
+    }
+
+    /* Ajustar main margin */
+    main {
+      margin-top: 50px;
+      padding: 16px 12px calc(20px + var(--safe-bottom));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header-nav {
+      width: 240px;
+    }
+
+    .logo-circle {
+      width: 44px;
+      min-height: 44px;
+    }
+
+    .header-name {
+      font-size: 16px;
+    }
+
+    main {
+      padding: 12px 10px calc(16px + var(--safe-bottom));
+    }
   }
 
   .tab { display: none; }
@@ -1638,6 +1806,10 @@ function loadSplashTimerConfig() {
 ══════════════════════════════════════════════════════ -->
 <header id="site-header">
   <div class="header-top" style="position:relative">
+    <!-- Botón menú hamburguesa (solo móvil) -->
+    <button id="btnMenuNavMobile" onclick="toggleNavMenu()" title="Abrir menú" aria-label="Menú de navegación">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <!-- Botón reconectar carpeta -->
     <button id="btnReconectarHeader" onclick="reconnectFolder()" title="Reconectar carpeta de trabajo" class="folder-connected">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
@@ -1753,6 +1925,9 @@ function loadSplashTimerConfig() {
     </div>
   </div>
 </div>
+
+<!-- Overlay para cerrar menú en móvil -->
+<div id="navOverlay" onclick="closeNavMenu()"></div>
 
 <!-- ══════════════════════════════════════════════════════
      MAIN
@@ -6671,6 +6846,56 @@ function revertirMovimientoVisita(clienteId, visitIdx) {
   });
   visit.stockMovId = null;
 }
+
+// ──────────────────────────────────────────────────────────────────
+// MOBILE NAVIGATION MENU - Mostrar/ocultar menú lateral
+// ──────────────────────────────────────────────────────────────────
+
+function toggleNavMenu() {
+  const nav = document.querySelector('.header-nav');
+  const overlay = document.getElementById('navOverlay');
+  
+  if (nav && overlay) {
+    nav.classList.toggle('active');
+    overlay.classList.toggle('active');
+    
+    // Prevenir scroll del body cuando el menú está abierto
+    if (nav.classList.contains('active')) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+}
+
+function closeNavMenu() {
+  const nav = document.querySelector('.header-nav');
+  const overlay = document.getElementById('navOverlay');
+  
+  if (nav && overlay) {
+    nav.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+// Cerrar menú al hacer clic en un botón de navegación
+document.addEventListener('DOMContentLoaded', function() {
+  const navButtons = document.querySelectorAll('.nav-btn');
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Cerrar el menú después de un pequeño delay para que se vea la transición
+      setTimeout(closeNavMenu, 100);
+    });
+  });
+  
+  // Cerrar menú al cambiar de tab con tecla Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeNavMenu();
+    }
+  });
+});
 </script>
 
 </body>
