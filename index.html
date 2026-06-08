@@ -227,13 +227,15 @@
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 998;
+    z-index: 997;
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none;
   }
 
   #navOverlay.active {
     opacity: 1;
+    pointer-events: auto;
   }
 
   /* MAIN */
@@ -252,6 +254,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    /* Los modals siempre están por encima del menú lateral */
+    .modal-overlay {
+      z-index: 9000 !important;
+    }
+    
+    .modal-overlay .modal {
+      z-index: 9001 !important;
     }
 
     /* Logo más pequeño en móvil */
@@ -6879,6 +6890,15 @@ function closeNavMenu() {
   }
 }
 
+// Cerrar menú al abrir cualquier modal
+const origClassAdd = Element.prototype.classList.add;
+Element.prototype.classList.add = function(...args) {
+  if (args.includes('open')) {
+    closeNavMenu(); // Cerrar menú cuando se abre un modal
+  }
+  return origClassAdd.call(this, ...args);
+};
+
 // Cerrar menú al hacer clic en un botón de navegación
 document.addEventListener('DOMContentLoaded', function() {
   const navButtons = document.querySelectorAll('.nav-btn');
@@ -6892,6 +6912,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // Cerrar menú al cambiar de tab con tecla Escape
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+      closeNavMenu();
+    }
+  });
+  
+  // Cerrar menú cuando se hace clic en un botón con data-toggle o data-action
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('button[onclick]');
+    if (btn && btn.onclick && btn.onclick.toString().includes('Modal')) {
       closeNavMenu();
     }
   });
