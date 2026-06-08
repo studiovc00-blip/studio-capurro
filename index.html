@@ -2837,9 +2837,9 @@ function loadSplashTimerConfig() {
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
           <label style="font-size:10px;letter-spacing:2px;font-weight:700;color:var(--ink-soft);white-space:nowrap">INTERVALO</label>
           <select id="autosaveInterval" onchange="setupAutosave()" style="flex:1;min-width:120px">
-            <option value="0">Desactivado</option>
+            <option value="0" selected>Desactivado</option>
             <option value="60">Cada 1 min</option>
-            <option value="300" selected>Cada 5 min</option>
+            <option value="300">Cada 5 min</option>
             <option value="600">Cada 10 min</option>
             <option value="1800">Cada 30 min</option>
             <option value="3600">Cada 1 hora</option>
@@ -3005,10 +3005,10 @@ function loadSplashTimerConfig() {
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px">
           <label style="font-size:10px;letter-spacing:2px;font-weight:700;color:var(--ink-soft);white-space:nowrap">FRECUENCIA</label>
           <select id="backupInterval" onchange="setupBackupTimer()" style="flex:1;min-width:130px">
-            <option value="0">Desactivado</option>
+            <option value="0" selected>Desactivado</option>
             <option value="3600">Cada 1 hora</option>
             <option value="10800">Cada 3 horas</option>
-            <option value="21600" selected>Cada 6 horas</option>
+            <option value="21600">Cada 6 horas</option>
             <option value="43200">Cada 12 horas</option>
             <option value="86400">Una vez al día</option>
           </select>
